@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Message v-if="alertMessage" @dismissed="alertMessage = ''" v-bind:message="alertMessage"/>
+    <Message v-if="alertMessage" v-bind:message="alertMessage" @dismissed="alertMessage = ''"/>
 
     <form enctype="multipart/form-data" @submit="uploadFile">
       <div class="custom-file mb-4">
@@ -13,12 +13,12 @@
       <input type="submit" value="Upload File" class="btn btn-primary btn-block mt-4"/>
     </form>
 
-    <div v-if="inputFilePath" class="row mt-5">
+    <div v-if="responseFileName" class="row mt-5">
       <div class="col-md-6 m-auto">
         <h3 class="text-center">
-          {{this.inputString}}
+          {{responseFileName}}
         </h3>
-        <img v-bind:src="inputFilePath" style="width: 100%">
+        <img v-bind:src="responseFilePath" v-bind:style="{width: '100%'}">
       </div>
     </div>
   </div>
@@ -38,7 +38,9 @@ export default {
   data() {
     return {
       inputString: "Choose File",
-      inputFilePath: "",
+      inputFile: null,
+      responseFileName: "",
+      responseFilePath: "",
       alertMessage: "",
       uploadPercentage: 0
     }
@@ -65,7 +67,8 @@ export default {
           }
         });
 
-        this.inputFilePath = response.data.filePath;
+        this.responseFilePath = response.data.filePath;
+        this.responseFileName = response.data.fileName;
         this.alertMessage = "File uploaded";
 
       } catch(err) {
