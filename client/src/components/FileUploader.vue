@@ -1,10 +1,14 @@
 <template>
   <div>
+    <Message v-if="alertMessage" @dismissed="alertMessage = ''" v-bind:message="alertMessage"/>
+
     <form enctype="multipart/form-data" @submit="uploadFile">
-      <div class="custom-file">
+      <div class="custom-file mb-4">
         <input type="file" class="custom-file-input" id="customFile" v-on:change="setFile">
         <label class="custom-file-label" for="customFile">{{inputString}}</label>
       </div>
+
+      <Progress v-bind:percentage="uploadPercentage"/>
 
       <input type="submit" value="Upload File" class="btn btn-primary btn-block mt-4"/>
     </form>
@@ -22,13 +26,21 @@
 
 <script>
 import axios from "axios";
+import Message from "./Message";
+import Progress from "./Progress";
 
 export default {
   name: "FileUploader",
+  components: {
+    Message,
+    Progress
+  },
   data() {
     return {
       inputString: "Choose File",
-      inputFilePath: ""
+      inputFilePath: "",
+      alertMessage: "",
+      uploadPercentage: 0
     }
   },
   methods: {
@@ -45,15 +57,22 @@ export default {
         const response = await axios.post("upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data"
+          },
+          onUploadProgress: progress => {
+            this.uploadPercentage = parseInt(Math.round((progress.loaded * 100) / progress.total));
+
+            setTimeout(() => this.uploadPercentage = 0, 10000);
           }
         });
 
         this.inputFilePath = response.data.filePath;
+        this.alertMessage = "File uploaded";
+
       } catch(err) {
         if (err.response.status === 500) {
-          console.log("server problem")
+          this.alertMessage = "Server problem"
         } else {
-          console.log(err.response.data.msg);
+          this.alertMessage = err.response.data.msg;
         }
       }
     }
